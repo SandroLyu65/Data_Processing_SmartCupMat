@@ -46,10 +46,11 @@ def stable(new_weight):
     else:
         if not compare(new_weight, stable_test):
             stable_counter = 0
+
         else:
             stable_counter = stable_counter + 1
             if stable_counter == 3:
-                difference = new_weight - last_weight
+                difference = last_weight - new_weight
                 last_weight = new_weight
                 print("data sent to database:", last_weight)
                 send_data(last_weight, difference)
@@ -58,20 +59,24 @@ def stable(new_weight):
 
 def main():
     measurement = round(pot.value,3)
-    weight_kg = (measurement - 0.333) * (1075 / (840 - 333))
+    # print(measurement)
+    weight_kg = (measurement - 0.333) * (360 / (451 - 333))
     if weight_kg < 0:
         weight_kg = 0.0
     process(round(weight_kg,3))
 
 
 while True:
-    button.wait_for_release()
-    button.wait_for_press()
-    power = True
-    led.on()
-    while power:
-        main()
-        if button.is_pressed:
-            power = False
-            led.off()
-            break
+    main()
+
+# while True:
+#     button.wait_for_release()
+#     button.wait_for_press()
+#     power = True
+#     led.on()
+#     while power:
+#         main()
+#         if button.is_pressed:
+#             power = False
+#             led.off()
+#             break

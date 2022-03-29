@@ -19,7 +19,7 @@ def send_data(last_weight_value, difference_value):
     today = datetime.datetime.now()
     date = str(today.strftime("%Y-%m-%d"))
     time = str(today.strftime("%X"))
-    url = "https://studev.groept.be/api/a21ib2d02/insert_water/" + date + "/" + time + "/" + str(last_weight_value) + "/" + str(difference_value)
+    url = "https://studev.groept.be/api/a21ib2d02/water_insert/" + date + "/" + time + "/" + str(last_weight_value) + "/" + str(difference_value)
     requests.get(url)
 
 

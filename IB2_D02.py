@@ -76,6 +76,8 @@ def led_green(interval):
 
 def led_lightup():
     while True:
+        if stop_threads:
+            break
         jason = request_data()
         led_state = int(jason[0]['led_state'])
         interval = int(jason[0]['timer'])
@@ -93,8 +95,8 @@ def led_lightup():
         else:
             os.chdir("/home/student")
             os.popen("sudo -S %s" % ("python3 disable.py"), 'w').write('student')
-        if stop_threads:
-            break
+        # if stop_threads:
+            # break
 
 
 def main():

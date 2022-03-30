@@ -27,6 +27,7 @@ def send_data(last_weight_value, difference_value):
     requests.get(url)
     # justDrank = True
 
+
 def request_data():
     url = "https://studev.groept.be/api/a21ib2d02/led_get"
     return requests.get(url).json()
@@ -69,7 +70,6 @@ def stable(new_weight):
                     justDrank = True
 
 
-
 def led_red():
     os.chdir("/home/student")
     os.popen("sudo -S %s" % ("python3 red.py"), 'w').write('student')
@@ -80,32 +80,6 @@ def led_green():
     os.chdir("/home/student")
     os.popen("sudo -S %s" % ("python3 green.py"), 'w').write('student')
     sleep(0.1)
-
-
-def led_lightup():
-    while True:
-        if stop_threads:
-            break
-        jason = request_data()
-        led_state = int(jason[0]['led_state'])
-        interval = int(jason[0]['timer'])
-        # if led_state == 1:
-        # print("request successfully")
-        # print("led: ", led_state)
-        # print("timer: ", interval)
-        if led_state == 1:
-            led_red()
-            os.chdir("/home/student")
-            os.popen("sudo -S %s" % ("python3 disable.py"), 'w').write('student')
-            sleep(0.01)
-            led_green()
-            # sleep(timer)
-        else:
-            os.chdir("/home/student")
-            os.popen("sudo -S %s" % ("python3 disable.py"), 'w').write('student')
-        # if stop_threads:
-        # break
-
 
 def main():
     measurement = round(pot.value,3)
@@ -132,10 +106,6 @@ while True:
     led.on()
     stop_threads = False
     while power:
-        #if not initialized:
-        #    timer = threading.Timer(1, led_lightup)
-        #    timer.start()
-        #   initialized = True
         main()
         currentTime = time.time()
         jason = request_data()
@@ -150,16 +120,15 @@ while True:
                 justDrank = False
             jason = request_data()
             interval = int(jason[0]['timer'])
-            if currentTime-lastTime>interval:
+            if currentTime-lastTime > interval:
+                print("in loop to go red")
                 led_red()
                 lastTime = currentTime
         if button.is_pressed:
             power = False
             led.off()
             stop_threads = True
-            #timer.join()
             os.chdir("/home/student")
             os.popen("sudo -S %s" % ("python3 disable.py"), 'w').write('student')
             sleep(0.1)
-            #initialized = False
             break

@@ -4,25 +4,28 @@ import requests
 import datetime
 import threading
 import os
+import time
 
 button = Button(17)
 led = LED(27)
-
 pot = MCP3008(0)
 
 stable_test = 0.0
 last_weight = 0
 stable_counter = 0
 difference = 0
+justDrank = False
+lastTime = time.time()
 
 
 def send_data(last_weight_value, difference_value):
+    global justDrank
     today = datetime.datetime.now()
     date = str(today.strftime("%Y-%m-%d"))
     time = str(today.strftime("%X"))
     url = "https://studev.groept.be/api/a21ib2d02/water_insert/" + date + "/" + time + "/" + str(last_weight_value) + "/" + str(difference_value)
     requests.get(url)
-
+    # justDrank = True
 
 def request_data():
     url = "https://studev.groept.be/api/a21ib2d02/led_get"
@@ -48,6 +51,7 @@ def stable(new_weight):
     global stable_test
     global last_weight
     global difference
+    global justDrank
     if stable_counter == 0:
         stable_counter = 1
         stable_test = new_weight
@@ -61,18 +65,21 @@ def stable(new_weight):
                 last_weight = new_weight
                 print("Send new difference sent to database:", difference)
                 send_data(last_weight, difference)
+                if difference>0.01:
+                    justDrank = True
+
 
 
 def led_red():
     os.chdir("/home/student")
     os.popen("sudo -S %s" % ("python3 red.py"), 'w').write('student')
-    sleep(2)
+    sleep(0.1)
 
 
-def led_green(interval):
+def led_green():
     os.chdir("/home/student")
     os.popen("sudo -S %s" % ("python3 green.py"), 'w').write('student')
-    sleep(interval)
+    sleep(0.1)
 
 
 def led_lightup():
@@ -83,9 +90,9 @@ def led_lightup():
         led_state = int(jason[0]['led_state'])
         interval = int(jason[0]['timer'])
         # if led_state == 1:
-            # print("request successfully")
-            # print("led: ", led_state)
-            # print("timer: ", interval)
+        # print("request successfully")
+        # print("led: ", led_state)
+        # print("timer: ", interval)
         if led_state == 1:
             led_red()
             os.chdir("/home/student")
@@ -97,7 +104,7 @@ def led_lightup():
             os.chdir("/home/student")
             os.popen("sudo -S %s" % ("python3 disable.py"), 'w').write('student')
         # if stop_threads:
-            # break
+        # break
 
 
 def main():
@@ -118,22 +125,41 @@ stop_threads = False
 while True:
     button.wait_for_release()
     button.wait_for_press()
+    jason = request_data()
+    interval = int(jason[0]['timer'])
+    led_green()
     power = True
     led.on()
     stop_threads = False
     while power:
-        if not initialized:
-            timer = threading.Timer(1, led_lightup)
-            timer.start()
-            initialized = True
+        #if not initialized:
+        #    timer = threading.Timer(1, led_lightup)
+        #    timer.start()
+        #   initialized = True
         main()
+        currentTime = time.time()
+        jason = request_data()
+        if int(jason[0]['led_state']) == 0:
+            os.chdir("/home/student")
+            os.popen("sudo -S %s" % ("python3 disable.py"), 'w').write('student')
+            sleep(0.1)
+        else:
+            if justDrank:
+                led_green()
+                lastTime = currentTime
+                justDrank = False
+            jason = request_data()
+            interval = int(jason[0]['timer'])
+            if currentTime-lastTime>interval:
+                led_red()
+                lastTime = currentTime
         if button.is_pressed:
             power = False
             led.off()
             stop_threads = True
-            timer.join()
+            #timer.join()
             os.chdir("/home/student")
             os.popen("sudo -S %s" % ("python3 disable.py"), 'w').write('student')
             sleep(0.1)
-            initialized = False
+            #initialized = False
             break

@@ -98,7 +98,7 @@ def led_lightup():
             os.chdir("/home/student")
             os.popen("sudo -S %s" % ("python3 disable.py"), 'w').write('student')
             sleep(0.01)
-            led_green(interval)
+            led_green()
             # sleep(timer)
         else:
             os.chdir("/home/student")

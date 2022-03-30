@@ -55,7 +55,7 @@ def stable(new_weight):
             stable_counter = 0
         else:
             stable_counter = stable_counter + 1
-            if stable_counter == 2:
+            if stable_counter == 3:
                 difference = last_weight - new_weight
                 last_weight = new_weight
                 print("Send new difference sent to database:", difference)
@@ -81,10 +81,10 @@ def led_lightup():
         jason = request_data()
         led_state = int(jason[0]['led_state'])
         interval = int(jason[0]['timer'])
-        if led_state == 1:
-            print("request successfully")
-            print("led: ", led_state)
-            print("timer: ", interval)
+        # if led_state == 1:
+            # print("request successfully")
+            # print("led: ", led_state)
+            # print("timer: ", interval)
         if led_state == 1:
             led_red()
             os.chdir("/home/student")
@@ -102,7 +102,7 @@ def led_lightup():
 def main():
     measurement = round(pot.value,3)
     # print(measurement)
-    weight_kg = (measurement - 0.333) * (360 / (451 - 333))
+    weight_kg = (measurement - 0.340) * (360 / (451 - 340))
     if weight_kg < 0:
         weight_kg = 0.0
     process(round(weight_kg,3))

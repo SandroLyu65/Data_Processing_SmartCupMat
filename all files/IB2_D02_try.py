@@ -2,6 +2,7 @@ from time import sleep
 from gpiozero import MCP3008, Button, LED
 import requests
 import datetime
+import threading
 import os
 import time
 
@@ -36,7 +37,7 @@ def process(new_data):
     print("new_data is:", new_data)
     if not compare(new_data, last_weight) and not new_data == 0:
         stable(new_data)
-    sleep(2)
+    sleep(10)
 
 
 def compare(new_weight, to_compare):
@@ -60,12 +61,12 @@ def stable(new_weight):
             stable_counter = 0
         else:
             stable_counter = stable_counter + 1
-            if stable_counter == 3:
+            if stable_counter == 2 and new_weight > 0.01:
                 difference = last_weight - new_weight
                 last_weight = new_weight
                 print("Send new difference sent to database:", difference)
                 send_data(last_weight, difference)
-                if difference>0.01:
+                if difference > 0.01:
                     justDrank = True
 
 
@@ -98,8 +99,6 @@ stop_threads = False
 while True:
     button.wait_for_release()
     button.wait_for_press()
-    jason = request_data()
-    interval = int(jason[0]['timer'])
     led_green()
     power = True
     led.on()
@@ -119,7 +118,7 @@ while True:
                 justDrank = False
             jason = request_data()
             interval = int(jason[0]['timer'])
-            if currentTime-lastTime > interval:
+            if currentTime-lastTime > (interval * 60):
                 print("in loop to go red")
                 led_red()
                 lastTime = currentTime
